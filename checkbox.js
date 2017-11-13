@@ -1,7 +1,9 @@
 'use strict';
 
 import React, { Component } from 'react';
-var PropTypes = React.PropTypes;
+
+const PropTypes = require('prop-types');
+
 import {
     StyleSheet,
     Image,
@@ -9,6 +11,7 @@ import {
     View,
     TouchableHighlight
 } from 'react-native';
+
 const CB_ENABLED_IMAGE = require('./cb_enabled.png');
 const CB_DISABLED_IMAGE = require('./cb_disabled.png');
 
@@ -17,9 +20,10 @@ class CheckBox extends Component {
         super(props);
 
         this.state = {
-            internalChecked: false
+            internalChecked: false,
+            isDisabled : props.disabled
         };
-
+        this.baseState = this.state;
         this.onChange = this.onChange.bind(this);
     }
 
@@ -28,14 +32,18 @@ class CheckBox extends Component {
             this.props.onChange(this.props.checked);
         } else {
             let internalChecked = this.state.internalChecked;
+            let newState = !internalChecked;
 
             if(this.props.onChange){
-              this.props.onChange(internalChecked);
+              this.props.onChange(newState);
             }
             this.setState({
-                internalChecked: !internalChecked
+                internalChecked: newState
             });
         }
+    }
+    componentWillMount() {
+        this.setState(this.baseState)
     }
 
     render() {
@@ -62,9 +70,11 @@ class CheckBox extends Component {
         if (this.props.labelBefore) {
             container = (
                 <View style={this.props.containerStyle || [styles.container, styles.flexContainer]}>
-                    <View style={styles.labelContainer}>
-                        <Text numberOfLines={this.props.labelLines} style={[styles.label, this.props.labelStyle]}>{this.props.label}</Text>
-                    </View>
+                    { (this.props.label ? (
+                      <View style={styles.labelContainer}>
+                          <Text numberOfLines={this.props.labelLines} style={[styles.label, this.props.labelStyle]}>{this.props.label}</Text>
+                      </View>
+                    ) : <View></View>) }
                     <Image
                     style={[styles.checkbox, this.props.checkboxStyle]}
                     source={source}/>
@@ -76,15 +86,17 @@ class CheckBox extends Component {
                     <Image
                     style={[styles.checkbox, this.props.checkboxStyle]}
                     source={source}/>
-                    <View style={styles.labelContainer}>
-                        <Text numberOfLines={this.props.labelLines} style={[styles.label, this.props.labelStyle]}>{this.props.label}</Text>
-                    </View>
+                    { (this.props.label ? (
+                      <View style={styles.labelContainer}>
+                          <Text numberOfLines={this.props.labelLines} style={[styles.label, this.props.labelStyle]}>{this.props.label}</Text>
+                      </View>
+                    ) : <View></View>) }
                 </View>
             );
         }
 
         return (
-            <TouchableHighlight onPress={this.onChange} underlayColor={this.props.underlayColor} style={styles.flexContainer}>
+            <TouchableHighlight onPress={this.onChange} underlayColor={this.props.underlayColor} style={styles.flexContainer} disabled = {this.state.isDisabled}>
                 {container}
             </TouchableHighlight>
         );
@@ -132,7 +144,7 @@ CheckBox.defaultProps = {
     checked: null,
     checkedImage: CB_ENABLED_IMAGE,
     uncheckedImage: CB_DISABLED_IMAGE,
-    underlayColor: 'white'
+    underlayColor: 'transparent'
 };
 
 module.exports = CheckBox;
